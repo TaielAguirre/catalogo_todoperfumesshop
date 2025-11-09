@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TPS Perfumes - Catálogo Premium</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header con Logo -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <img src="logo.png" alt="TPS Perfumes" class="logo-img">
+                <h1 class="logo-text">TPS Perfumes</h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn-contact" onclick="contactar()">
+                    <i class="fas fa-phone"></i> <span class="btn-contact-text">Contactar</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Filtros y Búsqueda -->
+    <section class="filters-section">
+        <div class="container">
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar perfumes..." class="search-input">
+                </div>
+            </div>
+            
+            <div class="category-filters-wrapper">
+                <div class="category-filters">
+                    <button class="filter-btn active" data-category="todos">
+                        <i class="fas fa-th"></i> <span>Todos</span>
+                    </button>
+                    <button class="filter-btn" data-category="masculinos">
+                        <i class="fas fa-mars"></i> <span>Masculinos</span>
+                    </button>
+                    <button class="filter-btn" data-category="femeninos">
+                        <i class="fas fa-venus"></i> <span>Femeninos</span>
+                    </button>
+                    <button class="filter-btn" data-category="unisex">
+                        <i class="fas fa-venus-mars"></i> <span>Unisex</span>
+                    </button>
+                    <button class="filter-btn" data-category="victoria-secret">
+                        <i class="fas fa-star"></i> <span>Victoria Secret</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Loading -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Cargando catálogo...</p>
+            </div>
+
+            <!-- Productos -->
+            <div id="productsContainer" class="products-grid"></div>
+
+            <!-- Sin resultados -->
+            <div id="noResults" class="no-results" style="display: none;">
+                <i class="fas fa-search"></i>
+                <h3>No se encontraron productos</h3>
+                <p>Intenta con otros términos de búsqueda</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Producto -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>TPS Perfumes</h3>
+                    <p>Catálogo premium de fragancias</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <p><i class="fas fa-phone"></i> +54 9 2914 74-8255</p>
+                    <p><i class="fas fa-envelope"></i> Todoperfumesshop@gmail.com</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Síguenos</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 TPS Perfumes. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="data-manager.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

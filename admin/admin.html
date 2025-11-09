@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - TPS Perfumes</title>
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Pantalla de Login -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1 class="logo-text">TPS Perfumes</h1>
+                <h2>Panel de Administración</h2>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-user"></i> Usuario
+                    </label>
+                    <input type="text" id="username" name="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i> Contraseña
+                    </label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+                <div id="loginError" class="error-message" style="display: none;"></div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </button>
+            </form>
+            <div class="login-footer">
+                <a href="../index.html" class="link-back">
+                    <i class="fas fa-arrow-left"></i> Volver al catálogo
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel de Administración -->
+    <div id="adminPanel" class="admin-panel" style="display: none;">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="admin-header-content">
+                <div class="admin-logo">
+                    <h1 class="logo-text">TPS Perfumes</h1>
+                    <span class="admin-badge">Admin</span>
+                </div>
+                <div class="admin-actions">
+                    <a href="../index.html" class="btn-icon" title="Ver catálogo">
+                        <i class="fas fa-store"></i>
+                    </a>
+                    <button class="btn-icon" onclick="handleLogout()" title="Cerrar sesión">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navegación -->
+        <nav class="admin-nav">
+            <button class="nav-btn active" data-section="dashboard">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </button>
+            <button class="nav-btn" data-section="products">
+                <i class="fas fa-box"></i> Productos
+            </button>
+            <button class="nav-btn" data-section="categories">
+                <i class="fas fa-tags"></i> Categorías
+            </button>
+        </nav>
+
+        <!-- Contenido Principal -->
+        <main class="admin-content">
+            <!-- Dashboard -->
+            <section id="dashboardSection" class="admin-section active">
+                <h2 class="section-title">Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="statTotal">0</h3>
+                            <p>Total Productos</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-mars"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="statMasculinos">0</h3>
+                            <p>Masculinos</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-venus"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="statFemeninos">0</h3>
+                            <p>Femeninos</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-venus-mars"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="statUnisex">0</h3>
+                            <p>Unisex</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="statVictoriaSecret">0</h3>
+                            <p>Victoria Secret</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>Últimos Productos Agregados</h3>
+                        <div id="recentProducts" class="recent-list"></div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Productos Recientemente Actualizados</h3>
+                        <div id="updatedProducts" class="recent-list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Productos -->
+            <section id="productsSection" class="admin-section">
+                <div class="section-header">
+                    <h2 class="section-title">Gestión de Productos</h2>
+                    <button class="btn-primary" onclick="openProductForm()">
+                        <i class="fas fa-plus"></i> Nuevo Producto
+                    </button>
+                </div>
+
+                <div class="filters-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="productSearch" placeholder="Buscar productos...">
+                    </div>
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">Todas las categorías</option>
+                    </select>
+                </div>
+
+                <div class="products-table-container">
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>Imagen</th>
+                                <th>Nombre</th>
+                                <th>Categoría</th>
+                                <th>Precio Minorista</th>
+                                <th>Precio x5</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody">
+                            <!-- Los productos se cargarán aquí -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Categorías -->
+            <section id="categoriesSection" class="admin-section">
+                <div class="section-header">
+                    <h2 class="section-title">Gestión de Categorías</h2>
+                    <button class="btn-primary" onclick="openCategoryForm()">
+                        <i class="fas fa-plus"></i> Nueva Categoría
+                    </button>
+                </div>
+
+                <div class="categories-grid" id="categoriesGrid">
+                    <!-- Las categorías se cargarán aquí -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal de Producto -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeProductForm()">&times;</span>
+            <h2 id="modalProductTitle">Nuevo Producto</h2>
+            <form id="productForm" class="product-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productName">Nombre del Producto *</label>
+                        <input type="text" id="productName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="productCategory">Categoría *</label>
+                        <select id="productCategory" required>
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="productImage">Imagen del Producto *</label>
+                    <div class="image-upload">
+                        <input type="file" id="productImage" accept="image/*">
+                        <div id="imagePreview" class="image-preview"></div>
+                        <p class="image-hint">Formato: JPG, PNG. Máximo 2MB</p>
+                        <p class="image-hint" style="color: #FFD700; margin-top: 0.5rem; font-size: 0.9rem;">
+                            <i class="fas fa-info-circle"></i> Al editar, puedes cambiar la imagen o dejarla vacía para mantener la actual
+                        </p>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="retailPrice">Precio Minorista (ARS)</label>
+                        <input type="number" id="retailPrice" min="0" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="price5">Precio x5 Unidades (USD)</label>
+                        <input type="number" id="price5" min="0" step="1">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="price10">Precio x10 Unidades (USD)</label>
+                        <input type="number" id="price10" min="0" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="price20">Precio x20 Unidades (USD)</label>
+                        <input type="number" id="price20" min="0" step="1">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="price30">Precio x30 Unidades (USD)</label>
+                    <input type="number" id="price30" min="0" step="1">
+                </div>
+
+                <div id="productFormError" class="error-message" style="display: none;"></div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeProductForm()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Categoría -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCategoryForm()">&times;</span>
+            <h2 id="modalCategoryTitle">Nueva Categoría</h2>
+            <form id="categoryForm" class="category-form">
+                <div class="form-group">
+                    <label for="categoryName">Nombre de la Categoría *</label>
+                    <input type="text" id="categoryName" required>
+                </div>
+                <div class="form-group">
+                    <label for="categoryIcon">Icono (Font Awesome)</label>
+                    <input type="text" id="categoryIcon" placeholder="mars, venus, star, etc.">
+                </div>
+                <div id="categoryFormError" class="error-message" style="display: none;"></div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeCategoryForm()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Categoría</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="auth.js"></script>
+    <script src="../data-manager.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
+

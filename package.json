@@ -1,0 +1,40 @@
+{
+  "name": "tps-perfumes-catalogo",
+  "version": "1.0.0",
+  "description": "Catálogo web moderno y responsive para TPS Perfumes",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8000 -o",
+    "dev": "npx http-server -p 8000 -o -c-1",
+    "build": "echo 'Proyecto estático - no requiere build'",
+    "deploy": "echo 'Sube los archivos a tu servidor web'"
+  },
+  "keywords": [
+    "perfumes",
+    "catalogo",
+    "web",
+    "responsive",
+    "html",
+    "css",
+    "javascript"
+  ],
+  "author": "TPS Perfumes",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "local"
+  },
+  "homepage": ".",
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
+
+
+
+

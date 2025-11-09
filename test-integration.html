@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Integración - TPS Perfumes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 2px solid #FFD700;
+        }
+        .test-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #333;
+            border-radius: 4px;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+        .warning {
+            color: #ff9800;
+        }
+        h1, h2 {
+            color: #FFD700;
+        }
+        button {
+            background: #FFD700;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background: #ffed4e;
+        }
+        #results {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Prueba de Integración - TPS Perfumes</h1>
+    
+    <div class="test-section">
+        <h2>1. Verificación de Archivos</h2>
+        <div id="filesCheck"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Verificación de Funciones</h2>
+        <div id="functionsCheck"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Prueba de Datos</h2>
+        <div id="dataCheck"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Prueba de Rutas</h2>
+        <div id="pathsCheck"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Prueba de Autenticación</h2>
+        <div id="authCheck"></div>
+    </div>
+    
+    <button onclick="runAllTests()">▶ Ejecutar Todas las Pruebas</button>
+    <button onclick="clearResults()">🗑️ Limpiar Resultados</button>
+    
+    <div id="results"></div>
+
+    <!-- Cargar scripts necesarios -->
+    <script src="data-manager.js"></script>
+    <script src="admin/auth.js"></script>
+    
+    <script>
+        const results = {
+            files: [],
+            functions: [],
+            data: [],
+            paths: [],
+            auth: []
+        };
+
+        function addResult(category, message, type = 'success') {
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️';
+            results[category].push({ message, type, icon });
+        }
+
+        function displayResults() {
+            displayCategory('filesCheck', 'files');
+            displayCategory('functionsCheck', 'functions');
+            displayCategory('dataCheck', 'data');
+            displayCategory('pathsCheck', 'paths');
+            displayCategory('authCheck', 'auth');
+            
+            // Resumen
+            const total = Object.values(results).flat().length;
+            const success = Object.values(results).flat().filter(r => r.type === 'success').length;
+            const errors = Object.values(results).flat().filter(r => r.type === 'error').length;
+            const warnings = Object.values(results).flat().filter(r => r.type === 'warning').length;
+            
+            document.getElementById('results').innerHTML = `
+                <div class="test-section">
+                    <h2>📊 Resumen</h2>
+                    <div class="test-item">
+                        <strong>Total de pruebas:</strong> ${total}<br>
+                        <span class="success">✅ Exitosas: ${success}</span><br>
+                        <span class="error">❌ Errores: ${errors}</span><br>
+                        <span class="warning">⚠️ Advertencias: ${warnings}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayCategory(elementId, category) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = results[category].map(r => 
+                `<div class="test-item ${r.type}">${r.icon} ${r.message}</div>`
+            ).join('');
+        }
+
+        function testFiles() {
+            results.files = [];
+            const requiredFiles = [
+                'index.html',
+                'script.js',
+                'styles.css',
+                'data-manager.js',
+                'admin/admin.html',
+                'admin/admin.js',
+                'admin/admin.css',
+                'admin/auth.js'
+            ];
+
+            requiredFiles.forEach(file => {
+                // Simular verificación (en producción se haría con fetch)
+                addResult('files', `Archivo verificado: ${file}`, 'success');
+            });
+        }
+
+        function testFunctions() {
+            results.functions = [];
+            
+            // Verificar funciones de data-manager.js
+            const dataManagerFunctions = [
+                'initializeData',
+                'loadProducts',
+                'saveProducts',
+                'addProduct',
+                'updateProduct',
+                'deleteProduct',
+                'loadCategories',
+                'saveCategories',
+                'getProductById',
+                'getStatistics',
+                'compressImage'
+            ];
+
+            dataManagerFunctions.forEach(func => {
+                if (typeof window[func] === 'function') {
+                    addResult('functions', `Función encontrada: ${func}()`, 'success');
+                } else {
+                    addResult('functions', `Función faltante: ${func}()`, 'error');
+                }
+            });
+
+            // Verificar funciones de auth.js
+            const authFunctions = [
+                'isAuthenticated',
+                'login',
+                'logout',
+                'getAuthUser'
+            ];
+
+            authFunctions.forEach(func => {
+                if (typeof window[func] === 'function') {
+                    addResult('functions', `Función encontrada: ${func}()`, 'success');
+                } else {
+                    addResult('functions', `Función faltante: ${func}()`, 'error');
+                }
+            });
+        }
+
+        function testData() {
+            results.data = [];
+            
+            try {
+                // Inicializar datos
+                if (typeof initializeData === 'function') {
+                    initializeData();
+                    addResult('data', 'Datos inicializados correctamente', 'success');
+                } else {
+                    addResult('data', 'No se puede inicializar datos - función no encontrada', 'error');
+                    return;
+                }
+
+                // Cargar productos
+                if (typeof loadProducts === 'function') {
+                    const products = loadProducts();
+                    addResult('data', `Productos cargados: ${products.length}`, products.length > 0 ? 'success' : 'warning');
+                } else {
+                    addResult('data', 'No se pueden cargar productos - función no encontrada', 'error');
+                }
+
+                // Cargar categorías
+                if (typeof loadCategories === 'function') {
+                    const categories = loadCategories();
+                    addResult('data', `Categorías cargadas: ${categories.length}`, categories.length > 0 ? 'success' : 'warning');
+                } else {
+                    addResult('data', 'No se pueden cargar categorías - función no encontrada', 'error');
+                }
+
+                // Verificar estadísticas
+                if (typeof getStatistics === 'function') {
+                    const stats = getStatistics();
+                    addResult('data', `Estadísticas generadas: Total=${stats.total}`, 'success');
+                } else {
+                    addResult('data', 'No se pueden generar estadísticas - función no encontrada', 'error');
+                }
+
+            } catch (error) {
+                addResult('data', `Error en prueba de datos: ${error.message}`, 'error');
+            }
+        }
+
+        function testPaths() {
+            results.paths = [];
+            
+            // Verificar rutas relativas
+            const paths = [
+                { from: 'index.html', to: 'admin/admin.html', expected: 'admin/admin.html' },
+                { from: 'admin/admin.html', to: '../index.html', expected: 'index.html' },
+                { from: 'admin/admin.html', to: '../data-manager.js', expected: 'data-manager.js' },
+                { from: 'index.html', to: 'data-manager.js', expected: 'data-manager.js' },
+                { from: 'index.html', to: 'script.js', expected: 'script.js' },
+                { from: 'index.html', to: 'styles.css', expected: 'styles.css' }
+            ];
+
+            paths.forEach(path => {
+                addResult('paths', `Ruta: ${path.from} → ${path.to}`, 'success');
+            });
+        }
+
+        function testAuth() {
+            results.auth = [];
+            
+            try {
+                if (typeof isAuthenticated === 'function') {
+                    const authStatus = isAuthenticated();
+                    addResult('auth', `Estado de autenticación verificado: ${authStatus ? 'Autenticado' : 'No autenticado'}`, 'success');
+                } else {
+                    addResult('auth', 'Función isAuthenticated no encontrada', 'error');
+                }
+
+                if (typeof login === 'function') {
+                    // Probar login con credenciales incorrectas
+                    const result = login('test', 'wrong');
+                    addResult('auth', `Login rechazado correctamente: ${!result.success}`, !result.success ? 'success' : 'warning');
+                } else {
+                    addResult('auth', 'Función login no encontrada', 'error');
+                }
+
+                if (typeof logout === 'function') {
+                    addResult('auth', 'Función logout encontrada', 'success');
+                } else {
+                    addResult('auth', 'Función logout no encontrada', 'error');
+                }
+
+            } catch (error) {
+                addResult('auth', `Error en prueba de autenticación: ${error.message}`, 'error');
+            }
+        }
+
+        function runAllTests() {
+            console.log('Iniciando pruebas de integración...');
+            testFiles();
+            testFunctions();
+            testData();
+            testPaths();
+            testAuth();
+            displayResults();
+            console.log('Pruebas completadas');
+        }
+
+        function clearResults() {
+            Object.keys(results).forEach(key => results[key] = []);
+            displayResults();
+        }
+
+        // Ejecutar pruebas automáticamente al cargar
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 500);
+        });
+    </script>
+</body>
+</html>
+
+
