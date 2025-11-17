@@ -3,6 +3,9 @@
 let currentEditingProductId = null;
 let currentEditingCategoryId = null;
 
+// Guardar referencia a la función original de data-manager.js antes de sobrescribirla
+const loadCategoriesFromStorage = loadCategories;
+
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
     checkAuth();
@@ -165,7 +168,7 @@ function loadProductsAdmin() {
     const categoryFilter = document.getElementById('categoryFilter');
     
     // Llenar filtro de categorías
-    const categories = loadCategories();
+    const categories = loadCategoriesFromStorage();
     categoryFilter.innerHTML = '<option value="">Todas las categorías</option>' +
         categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
 
@@ -183,7 +186,7 @@ function renderProductsTable(products) {
     }
 
     tbody.innerHTML = products.map(product => {
-        const category = loadCategories().find(c => c.id === product.category);
+        const category = loadCategoriesFromStorage().find(c => c.id === product.category);
         return `
             <tr>
                 <td>
@@ -241,7 +244,7 @@ function openProductForm(productId = null) {
     form.reset();
     
     // Llenar categorías en el select
-    const categories = loadCategories();
+    const categories = loadCategoriesFromStorage();
     const categorySelect = document.getElementById('productCategory');
     categorySelect.innerHTML = '<option value="">Seleccionar...</option>' +
         categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
@@ -440,30 +443,34 @@ function deleteProductConfirm(productId) {
     }
 }
 
-// Cargar categorías
+// Cargar categorías (renderiza el grid y devuelve las categorías)
 function loadCategories() {
-    const categories = loadCategories();
+    const categories = loadCategoriesFromStorage();
     const grid = document.getElementById('categoriesGrid');
     
-    grid.innerHTML = categories.map(cat => `
-        <div class="category-card">
-            <div class="category-icon">
-                <i class="fas fa-${cat.icon || 'tag'}"></i>
+    if (grid) {
+        grid.innerHTML = categories.map(cat => `
+            <div class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-${cat.icon || 'tag'}"></i>
+                </div>
+                <div class="category-name">${cat.name}</div>
+                <div class="category-actions">
+                    <button class="btn-edit" onclick="editCategory('${cat.id}')">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    ${cat.id !== 'masculinos' && cat.id !== 'femeninos' && cat.id !== 'unisex' && cat.id !== 'victoria-secret' 
+                        ? `<button class="btn-delete" onclick="deleteCategoryConfirm('${cat.id}')">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>`
+                        : ''
+                    }
+                </div>
             </div>
-            <div class="category-name">${cat.name}</div>
-            <div class="category-actions">
-                <button class="btn-edit" onclick="editCategory('${cat.id}')">
-                    <i class="fas fa-edit"></i> Editar
-                </button>
-                ${cat.id !== 'masculinos' && cat.id !== 'femeninos' && cat.id !== 'unisex' && cat.id !== 'victoria-secret' 
-                    ? `<button class="btn-delete" onclick="deleteCategoryConfirm('${cat.id}')">
-                        <i class="fas fa-trash"></i> Eliminar
-                    </button>`
-                    : ''
-                }
-            </div>
-        </div>
-    `).join('');
+        `).join('');
+    }
+    
+    return categories;
 }
 
 // Abrir formulario de categoría
@@ -476,7 +483,7 @@ function openCategoryForm(categoryId = null) {
     if (categoryId) {
         // Modo edición
         title.textContent = 'Editar Categoría';
-        const categories = loadCategories();
+        const categories = loadCategoriesFromStorage();
         const category = categories.find(c => c.id === categoryId);
         if (category) {
             document.getElementById('categoryName').value = category.name;
@@ -514,7 +521,7 @@ function handleCategorySubmit(e) {
         return;
     }
 
-    const categories = loadCategories();
+    const categories = loadCategoriesFromStorage();
     
     if (currentEditingCategoryId) {
         // Actualizar categoría existente
@@ -549,7 +556,7 @@ function editCategory(categoryId) {
 
 // Confirmar eliminación de categoría
 function deleteCategoryConfirm(categoryId) {
-    const categories = loadCategories();
+    const categories = loadCategoriesFromStorage();
     const category = categories.find(c => c.id === categoryId);
     
     if (category && confirm(`¿Estás seguro de que quieres eliminar la categoría "${category.name}"?`)) {
