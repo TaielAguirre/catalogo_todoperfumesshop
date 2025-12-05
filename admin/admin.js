@@ -3,16 +3,18 @@
 let currentEditingProductId = null;
 let currentEditingCategoryId = null;
 
-// Guardar referencia a la función original de data-manager.js antes de sobrescribirla
-const loadCategoriesFromStorage = loadCategories;
+// Nota: loadCategories está definida en data-manager.js y la usamos directamente
 
 // Inicialización
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+    // Asegurar que los datos estén inicializados (migrar CSV si localStorage está vacío)
+    initializeData();
+
     checkAuth();
     setupEventListeners();
     loadDashboard();
     loadProductsAdmin();
-    loadCategories();
+    loadCategoriesAdmin();
 });
 
 // Verificar autenticación
@@ -81,7 +83,7 @@ function handleLogin(e) {
     const errorDiv = document.getElementById('loginError');
 
     const result = login(username, password);
-    
+
     if (result.success) {
         errorDiv.style.display = 'none';
         checkAuth();
@@ -120,14 +122,14 @@ function switchSection(section) {
     } else if (section === 'products') {
         loadProductsAdmin();
     } else if (section === 'categories') {
-        loadCategories();
+        loadCategoriesAdmin();
     }
 }
 
 // Cargar dashboard
 function loadDashboard() {
     const stats = getStatistics();
-    
+
     document.getElementById('statTotal').textContent = stats.total;
     document.getElementById('statMasculinos').textContent = stats.byCategory.masculinos || 0;
     document.getElementById('statFemeninos').textContent = stats.byCategory.femeninos || 0;
@@ -166,9 +168,9 @@ function loadProductsAdmin() {
     const products = loadProducts();
     const tbody = document.getElementById('productsTableBody');
     const categoryFilter = document.getElementById('categoryFilter');
-    
+
     // Llenar filtro de categorías
-    const categories = loadCategoriesFromStorage();
+    const categories = loadCategories();
     categoryFilter.innerHTML = '<option value="">Todas las categorías</option>' +
         categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
 
@@ -179,21 +181,21 @@ function loadProductsAdmin() {
 // Renderizar tabla de productos
 function renderProductsTable(products) {
     const tbody = document.getElementById('productsTableBody');
-    
+
     if (products.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #888;">No hay productos</td></tr>';
         return;
     }
 
     tbody.innerHTML = products.map(product => {
-        const category = loadCategoriesFromStorage().find(c => c.id === product.category);
+        const category = loadCategories().find(c => c.id === product.category);
         return `
             <tr>
                 <td>
-                    ${product.image 
-                        ? `<img src="${product.image}" alt="${product.name}" class="product-image-cell">`
-                        : '<div class="product-image-cell" style="background: rgba(255,215,0,0.2); display: flex; align-items: center; justify-content: center; color: #888; font-size: 0.8rem;">Sin imagen</div>'
-                    }
+                    ${product.image
+                ? `<img src="${product.image}" alt="${product.name}" class="product-image-cell">`
+                : '<div class="product-image-cell" style="background: rgba(255,215,0,0.2); display: flex; align-items: center; justify-content: center; color: #888; font-size: 0.8rem;">Sin imagen</div>'
+            }
                 </td>
                 <td class="product-name-cell">${product.name}</td>
                 <td>
@@ -221,13 +223,13 @@ function filterProducts() {
     const searchTerm = document.getElementById('productSearch').value.toLowerCase();
     const categoryFilter = document.getElementById('categoryFilter').value;
     const products = loadProducts();
-    
+
     const filtered = products.filter(product => {
         const matchesSearch = !searchTerm || product.name.toLowerCase().includes(searchTerm);
         const matchesCategory = !categoryFilter || product.category === categoryFilter;
         return matchesSearch && matchesCategory;
     });
-    
+
     renderProductsTable(filtered);
 }
 
@@ -239,12 +241,12 @@ function openProductForm(productId = null) {
     const title = document.getElementById('modalProductTitle');
     const imageInput = document.getElementById('productImage');
     const imageLabel = document.querySelector('label[for="productImage"]');
-    
+
     // Limpiar formulario
     form.reset();
-    
+
     // Llenar categorías en el select
-    const categories = loadCategoriesFromStorage();
+    const categories = loadCategories();
     const categorySelect = document.getElementById('productCategory');
     categorySelect.innerHTML = '<option value="">Seleccionar...</option>' +
         categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
@@ -252,7 +254,7 @@ function openProductForm(productId = null) {
     if (productId) {
         // Modo edición
         title.textContent = 'Editar Producto';
-        
+
         const product = getProductById(productId);
         if (product) {
             document.getElementById('productName').value = product.name;
@@ -262,7 +264,7 @@ function openProductForm(productId = null) {
             document.getElementById('price10').value = product.price10 || '';
             document.getElementById('price20').value = product.price20 || '';
             document.getElementById('price30').value = product.price30 || '';
-            
+
             // Mostrar imagen existente
             const preview = document.getElementById('imagePreview');
             if (product.image) {
@@ -296,7 +298,7 @@ function openProductForm(productId = null) {
         preview.innerHTML = '';
         preview.classList.add('empty');
     }
-    
+
     modal.style.display = 'block';
 }
 
@@ -308,7 +310,7 @@ function closeProductForm() {
     document.getElementById('imagePreview').innerHTML = '';
     document.getElementById('imagePreview').classList.add('empty');
     document.getElementById('productFormError').style.display = 'none';
-    
+
     // Restaurar estado del campo de imagen
     const imageInput = document.getElementById('productImage');
     const imageLabel = document.querySelector('label[for="productImage"]');
@@ -322,14 +324,14 @@ function closeProductForm() {
 function handleImagePreview(e) {
     const file = e.target.files[0];
     const preview = document.getElementById('imagePreview');
-    
+
     if (file) {
-        compressImage(file, 800, 0.8, function(base64, error) {
+        compressImage(file, 800, 0.8, function (base64, error) {
             if (error) {
                 showProductError(error);
                 return;
             }
-            
+
             preview.innerHTML = `<img src="${base64}" alt="Preview">`;
             preview.classList.remove('empty');
         });
@@ -414,7 +416,7 @@ function handleProductSubmit(e) {
         closeProductForm();
         loadProductsAdmin();
         loadDashboard();
-        
+
         // Mostrar mensaje de éxito
         alert(currentEditingProductId ? 'Producto actualizado exitosamente' : 'Producto creado exitosamente');
     });
@@ -444,10 +446,10 @@ function deleteProductConfirm(productId) {
 }
 
 // Cargar categorías (renderiza el grid y devuelve las categorías)
-function loadCategories() {
-    const categories = loadCategoriesFromStorage();
+function loadCategoriesAdmin() {
+    const categories = loadCategories();  // Usa la función de data-manager.js
     const grid = document.getElementById('categoriesGrid');
-    
+
     if (grid) {
         grid.innerHTML = categories.map(cat => `
             <div class="category-card">
@@ -459,17 +461,17 @@ function loadCategories() {
                     <button class="btn-edit" onclick="editCategory('${cat.id}')">
                         <i class="fas fa-edit"></i> Editar
                     </button>
-                    ${cat.id !== 'masculinos' && cat.id !== 'femeninos' && cat.id !== 'unisex' && cat.id !== 'victoria-secret' 
-                        ? `<button class="btn-delete" onclick="deleteCategoryConfirm('${cat.id}')">
+                    ${cat.id !== 'masculinos' && cat.id !== 'femeninos' && cat.id !== 'unisex' && cat.id !== 'victoria-secret'
+                ? `<button class="btn-delete" onclick="deleteCategoryConfirm('${cat.id}')">
                             <i class="fas fa-trash"></i> Eliminar
                         </button>`
-                        : ''
-                    }
+                : ''
+            }
                 </div>
             </div>
         `).join('');
     }
-    
+
     return categories;
 }
 
@@ -479,11 +481,11 @@ function openCategoryForm(categoryId = null) {
     const modal = document.getElementById('categoryModal');
     const form = document.getElementById('categoryForm');
     const title = document.getElementById('modalCategoryTitle');
-    
+
     if (categoryId) {
         // Modo edición
         title.textContent = 'Editar Categoría';
-        const categories = loadCategoriesFromStorage();
+        const categories = loadCategories();
         const category = categories.find(c => c.id === categoryId);
         if (category) {
             document.getElementById('categoryName').value = category.name;
@@ -494,7 +496,7 @@ function openCategoryForm(categoryId = null) {
         title.textContent = 'Nueva Categoría';
         form.reset();
     }
-    
+
     modal.style.display = 'block';
 }
 
@@ -521,8 +523,8 @@ function handleCategorySubmit(e) {
         return;
     }
 
-    const categories = loadCategoriesFromStorage();
-    
+    const categories = loadCategories();
+
     if (currentEditingCategoryId) {
         // Actualizar categoría existente
         const index = categories.findIndex(c => c.id === currentEditingCategoryId);
@@ -543,9 +545,9 @@ function handleCategorySubmit(e) {
     }
 
     closeCategoryForm();
-    loadCategories();
+    loadCategoriesAdmin();
     loadProductsAdmin(); // Recargar para actualizar selects
-    
+
     alert(currentEditingCategoryId ? 'Categoría actualizada exitosamente' : 'Categoría creada exitosamente');
 }
 
@@ -556,22 +558,22 @@ function editCategory(categoryId) {
 
 // Confirmar eliminación de categoría
 function deleteCategoryConfirm(categoryId) {
-    const categories = loadCategoriesFromStorage();
+    const categories = loadCategories();
     const category = categories.find(c => c.id === categoryId);
-    
+
     if (category && confirm(`¿Estás seguro de que quieres eliminar la categoría "${category.name}"?`)) {
         // Verificar si hay productos usando esta categoría
         const products = loadProducts();
         const productsUsingCategory = products.filter(p => p.category === categoryId);
-        
+
         if (productsUsingCategory.length > 0) {
             alert(`No se puede eliminar la categoría porque tiene ${productsUsingCategory.length} producto(s) asociado(s).`);
             return;
         }
-        
+
         const filtered = categories.filter(c => c.id !== categoryId);
         saveCategories(filtered);
-        loadCategories();
+        loadCategoriesAdmin();
         alert('Categoría eliminada exitosamente');
     }
 }
