@@ -201,7 +201,7 @@ function renderProductsTable(products) {
                 <td>
                     <span class="product-category-cell">${category ? category.name : product.category}</span>
                 </td>
-                <td>${product.retailPrice ? `$${formatNumber(product.retailPrice)} ARS` : '-'}</td>
+                <td>${product.retailPrice ? `$${formatNumber(product.retailPrice)} USD` : '-'}</td>
                 <td>${product.price5 ? `$${product.price5} USD` : '-'}</td>
                 <td>
                     <div class="action-buttons">
