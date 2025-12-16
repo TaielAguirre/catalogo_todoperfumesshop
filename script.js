@@ -109,8 +109,14 @@ function renderProducts() {
 
 // Crear tarjeta de producto
 function createProductCard(product) {
-    const mainPrice = product.retailPrice || product.price5 || product.price10 || product.price20 || product.price30;
-    const currency = product.retailPrice ? 'ARS' : 'USD';
+    // Buscar el primer precio válido (mayor que 0) para mostrar como precio principal
+    const mainPrice = isValidPrice(product.retailPrice) ? product.retailPrice :
+                      isValidPrice(product.price5) ? product.price5 :
+                      isValidPrice(product.price10) ? product.price10 :
+                      isValidPrice(product.price20) ? product.price20 :
+                      isValidPrice(product.price30) ? product.price30 : null;
+    // Todos los precios se muestran en USD en el catálogo público
+    const currency = 'USD';
     
     // Obtener nombre de categoría
     const categories = loadCategories();
@@ -137,35 +143,35 @@ function createProductCard(product) {
             </div>
             
             <div class="price-details">
-                ${product.retailPrice ? `
+                ${isValidPrice(product.retailPrice) ? `
                     <div class="price-detail">
                         <span class="price-label">Precio Minorista:</span>
-                        <span class="price-value">$${formatNumber(product.retailPrice)} <span class="currency">ARS</span></span>
+                        <span class="price-value">$${formatNumber(product.retailPrice)} <span class="currency">USD</span></span>
                     </div>
                 ` : ''}
                 
-                ${product.price5 ? `
+                ${isValidPrice(product.price5) ? `
                     <div class="price-detail">
                         <span class="price-label">x5 Unidades:</span>
                         <span class="price-value">$${product.price5} <span class="currency">USD</span></span>
                     </div>
                 ` : ''}
                 
-                ${product.price10 ? `
+                ${isValidPrice(product.price10) ? `
                     <div class="price-detail">
                         <span class="price-label">x10 Unidades:</span>
                         <span class="price-value">$${product.price10} <span class="currency">USD</span></span>
                     </div>
                 ` : ''}
                 
-                ${product.price20 ? `
+                ${isValidPrice(product.price20) ? `
                     <div class="price-detail">
                         <span class="price-label">x20 Unidades:</span>
                         <span class="price-value">$${product.price20} <span class="currency">USD</span></span>
                     </div>
                 ` : ''}
                 
-                ${product.price30 ? `
+                ${isValidPrice(product.price30) ? `
                     <div class="price-detail">
                         <span class="price-label">x30 Unidades:</span>
                         <span class="price-value">$${product.price30} <span class="currency">USD</span></span>
@@ -185,6 +191,13 @@ function getCategoryDisplayName(category) {
         'victoria-secret': 'Victoria Secret'
     };
     return names[category] || category;
+}
+
+// Validar si un precio es válido (no es null, vacío, "0" o 0)
+function isValidPrice(price) {
+    if (!price) return false;
+    const numPrice = parseInt(price);
+    return !isNaN(numPrice) && numPrice > 0;
 }
 
 // Formatear precio
@@ -242,35 +255,35 @@ function showProductModal(product) {
         <div class="modal-product-name">${product.name}</div>
         <div class="modal-product-category">${categoryName}</div>
         <div class="modal-prices">
-            ${product.retailPrice ? `
+            ${isValidPrice(product.retailPrice) ? `
                 <div class="modal-price-item">
                     <span class="modal-price-label">Precio Minorista</span>
-                    <span class="modal-price-value">$${formatNumber(product.retailPrice)} ARS</span>
+                    <span class="modal-price-value">$${formatNumber(product.retailPrice)} USD</span>
                 </div>
             ` : ''}
             
-            ${product.price5 ? `
+            ${isValidPrice(product.price5) ? `
                 <div class="modal-price-item">
                     <span class="modal-price-label">x5 Unidades</span>
                     <span class="modal-price-value">$${product.price5} USD</span>
                 </div>
             ` : ''}
             
-            ${product.price10 ? `
+            ${isValidPrice(product.price10) ? `
                 <div class="modal-price-item">
                     <span class="modal-price-label">x10 Unidades</span>
                     <span class="modal-price-value">$${product.price10} USD</span>
                 </div>
             ` : ''}
             
-            ${product.price20 ? `
+            ${isValidPrice(product.price20) ? `
                 <div class="modal-price-item">
                     <span class="modal-price-label">x20 Unidades</span>
                     <span class="modal-price-value">$${product.price20} USD</span>
                 </div>
             ` : ''}
             
-            ${product.price30 ? `
+            ${isValidPrice(product.price30) ? `
                 <div class="modal-price-item">
                     <span class="modal-price-label">x30 Unidades</span>
                     <span class="modal-price-value">$${product.price30} USD</span>
