@@ -1,5 +1,5 @@
 // Gestor de Datos - Almacenamiento en localStorage con JSON
-const DATA_STORAGE_KEY = 'tps_products_data';
+const DATA_STORAGE_KEY = 'tps_products_data_v1';
 const CATEGORIES_STORAGE_KEY = 'tps_categories';
 
 // Categorías por defecto
