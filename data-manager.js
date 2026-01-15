@@ -17,7 +17,7 @@ function initializeData() {
         const products = migrateCSVToJSON();
         saveProducts(products);
     }
-    
+
     if (!localStorage.getItem(CATEGORIES_STORAGE_KEY)) {
         saveCategories(DEFAULT_CATEGORIES);
     }
@@ -162,11 +162,15 @@ Crema Karsell ,"$37,000",$26,$30,$33,$41`;
     const products = [];
     let currentCategory = '';
     let productId = 1;
-    
+
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        const columns = line.split(',').map(col => col.trim().replace(/"/g, ''));
-        
+        // Parse CSV line respecting quotes
+        // Split by comma only if not inside quotes
+        const columns = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
+        // Clean quotes from the parsed columns
+        const cleanColumns = columns.map(col => col.trim().replace(/^"|"$/g, '').trim());
+
         // Detectar categorías
         if (columns[0].includes('Perfumes | Masculinos')) {
             currentCategory = 'masculinos';
@@ -177,26 +181,26 @@ Crema Karsell ,"$37,000",$26,$30,$33,$41`;
         } else if (columns[0].includes('VICTORIA SECRET')) {
             currentCategory = 'victoria-secret';
         }
-        
+
         // Detectar productos válidos
-        if (isValidProduct(columns)) {
-            const product = createProductFromCSV(columns, currentCategory, productId++);
+        if (isValidProduct(cleanColumns)) {
+            const product = createProductFromCSV(cleanColumns, currentCategory, productId++);
             if (product) {
                 products.push(product);
             }
         }
     }
-    
+
     return products;
 }
 
 function isValidProduct(columns) {
-    return columns[0] && 
-           columns[0] !== 'Producto' && 
-           !columns[0].includes('Perfumes |') && 
-           !columns[0].includes('VICTORIA SECRET') &&
-           !columns[0].includes('*') &&
-           columns[0].length > 2;
+    return columns[0] &&
+        columns[0] !== 'Producto' &&
+        !columns[0].includes('Perfumes |') &&
+        !columns[0].includes('VICTORIA SECRET') &&
+        !columns[0].includes('*') &&
+        columns[0].length > 2;
 }
 
 function createProductFromCSV(columns, category, id) {
@@ -206,11 +210,11 @@ function createProductFromCSV(columns, category, id) {
     const price20 = columns[3];
     const price10 = columns[4];
     const price5 = columns[5];
-    
+
     if (!retailPrice && !price30 && !price20 && !price10 && !price5) {
         return null;
     }
-    
+
     return {
         id: `prod_${id}`,
         name: name,
@@ -228,7 +232,9 @@ function createProductFromCSV(columns, category, id) {
 
 function cleanPrice(price) {
     if (!price) return null;
-    return price.replace(/[^\d]/g, '');
+    // Si tiene decimales (.00), quitarlos primero para evitar que se unan (ej: 95000.00 -> 95000)
+    let clean = price.split('.')[0];
+    return clean.replace(/[^\d]/g, '');
 }
 
 // Guardar productos
@@ -323,7 +329,7 @@ function deleteProduct(id) {
 function getStatistics() {
     const products = loadProducts();
     const categories = loadCategories();
-    
+
     const stats = {
         total: products.length,
         byCategory: {},
@@ -334,11 +340,11 @@ function getStatistics() {
             .sort((a, b) => b.updatedAt - a.updatedAt)
             .slice(0, 5)
     };
-    
+
     categories.forEach(cat => {
         stats.byCategory[cat.id] = products.filter(p => p.category === cat.id).length;
     });
-    
+
     return stats;
 }
 
@@ -348,18 +354,18 @@ function imageToBase64(file, callback) {
         callback(null, 'Tipo de archivo no válido');
         return;
     }
-    
+
     // Validar tamaño (máximo 2MB)
     if (file.size > 2 * 1024 * 1024) {
         callback(null, 'La imagen es demasiado grande (máximo 2MB)');
         return;
     }
-    
+
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
         callback(e.target.result, null);
     };
-    reader.onerror = function() {
+    reader.onerror = function () {
         callback(null, 'Error al leer la imagen');
     };
     reader.readAsDataURL(file);
@@ -369,29 +375,29 @@ function imageToBase64(file, callback) {
 function compressImage(file, maxWidth = 800, quality = 0.8, callback) {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = function(e) {
+    reader.onload = function (e) {
         const img = new Image();
         img.src = e.target.result;
-        img.onload = function() {
+        img.onload = function () {
             const canvas = document.createElement('canvas');
             let width = img.width;
             let height = img.height;
-            
+
             if (width > maxWidth) {
                 height = (height * maxWidth) / width;
                 width = maxWidth;
             }
-            
+
             canvas.width = width;
             canvas.height = height;
-            
+
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
-            
-            canvas.toBlob(function(blob) {
+
+            canvas.toBlob(function (blob) {
                 const reader = new FileReader();
                 reader.readAsDataURL(blob);
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     callback(e.target.result, null);
                 };
             }, 'image/jpeg', quality);

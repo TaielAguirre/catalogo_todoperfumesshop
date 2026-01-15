@@ -13,7 +13,7 @@ let modalContent;
 let closeModal;
 
 // Inicialización
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Inicializar elementos del DOM
     searchInput = document.getElementById('searchInput');
     productsContainer = document.getElementById('productsContainer');
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     noResults = document.getElementById('noResults');
     modal = document.getElementById('productModal');
     modalContent = document.getElementById('modalContent');
-    
+
     loadProductsCatalog();
     setupEventListeners();
 });
@@ -32,7 +32,7 @@ function setupEventListeners() {
     if (searchInput) {
         searchInput.addEventListener('input', debounce(handleSearch, 300));
     }
-    
+
     // Filtros de categoría
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -41,7 +41,7 @@ function setupEventListeners() {
             filterProducts();
         });
     });
-    
+
     // Cerrar modal al hacer clic fuera
     if (modal) {
         modal.addEventListener('click', (e) => {
@@ -50,7 +50,7 @@ function setupEventListeners() {
             }
         });
     }
-    
+
     // Escape key para cerrar modal
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && modal && modal.style.display === 'block') {
@@ -64,16 +64,16 @@ function loadProductsCatalog() {
     try {
         // Inicializar datos si no existen
         initializeData();
-        
+
         // Cargar productos desde localStorage usando data-manager.js
         const products = loadProducts();
-        
+
         allProducts = products;
         filteredProducts = products;
-        
+
         hideLoading();
         renderProducts();
-        
+
     } catch (error) {
         console.error('Error cargando productos:', error);
         hideLoading();
@@ -89,12 +89,12 @@ function renderProducts() {
         showNoResults();
         return;
     }
-    
+
     hideNoResults();
-    
+
     const productsHTML = filteredProducts.map(product => createProductCard(product)).join('');
     productsContainer.innerHTML = productsHTML;
-    
+
     // Agregar event listeners a las tarjetas
     document.querySelectorAll('.product-card').forEach(card => {
         card.addEventListener('click', () => {
@@ -111,18 +111,18 @@ function renderProducts() {
 function createProductCard(product) {
     // Buscar el primer precio válido (mayor que 0) para mostrar como precio principal
     const mainPrice = isValidPrice(product.retailPrice) ? product.retailPrice :
-                      isValidPrice(product.price5) ? product.price5 :
-                      isValidPrice(product.price10) ? product.price10 :
-                      isValidPrice(product.price20) ? product.price20 :
-                      isValidPrice(product.price30) ? product.price30 : null;
+        isValidPrice(product.price5) ? product.price5 :
+            isValidPrice(product.price10) ? product.price10 :
+                isValidPrice(product.price20) ? product.price20 :
+                    isValidPrice(product.price30) ? product.price30 : null;
     // Todos los precios se muestran en USD en el catálogo público
     const currency = 'USD';
-    
+
     // Obtener nombre de categoría
     const categories = loadCategories();
     const category = categories.find(c => c.id === product.category);
     const categoryName = category ? category.name : getCategoryDisplayName(product.category);
-    
+
     return `
         <div class="product-card" data-product-id="${product.id}" data-product-name="${product.name}">
             ${product.image ? `
@@ -139,14 +139,14 @@ function createProductCard(product) {
             </div>
             
             <div class="product-price">
-                ${formatPrice(mainPrice, currency)}
+                $${formatNumber(mainPrice)} ${mainPrice === product.retailPrice ? 'ARS' : 'USD'}
             </div>
             
             <div class="price-details">
                 ${isValidPrice(product.retailPrice) ? `
                     <div class="price-detail">
                         <span class="price-label">Precio Minorista:</span>
-                        <span class="price-value">$${formatNumber(product.retailPrice)} <span class="currency">USD</span></span>
+                        <span class="price-value">$${formatNumber(product.retailPrice)} <span class="currency">ARS</span></span>
                     </div>
                 ` : ''}
                 
@@ -224,19 +224,19 @@ function filterProducts(searchTerm = '') {
         const matchesSearch = !searchTerm || product.name.toLowerCase().includes(searchTerm);
         return matchesCategory && matchesSearch;
     });
-    
+
     renderProducts();
 }
 
 // Establecer filtro activo
 function setActiveFilter(category) {
     currentCategory = category;
-    
+
     // Actualizar botones
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    
+
     document.querySelector(`[data-category="${category}"]`).classList.add('active');
 }
 
@@ -245,7 +245,7 @@ function showProductModal(product) {
     const categories = loadCategories();
     const category = categories.find(c => c.id === product.category);
     const categoryName = category ? category.name : getCategoryDisplayName(product.category);
-    
+
     const modalHTML = `
         ${product.image ? `
             <div class="modal-product-image">
@@ -258,7 +258,7 @@ function showProductModal(product) {
             ${isValidPrice(product.retailPrice) ? `
                 <div class="modal-price-item">
                     <span class="modal-price-label">Precio Minorista</span>
-                    <span class="modal-price-value">$${formatNumber(product.retailPrice)} USD</span>
+                    <span class="modal-price-value">$${formatNumber(product.retailPrice)} ARS</span>
                 </div>
             ` : ''}
             
@@ -297,11 +297,11 @@ function showProductModal(product) {
             </button>
         </div>
     `;
-    
+
     modalContent.innerHTML = modalHTML;
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden';
-    
+
     // Configurar cierre del modal
     setupModalClose();
 }
@@ -365,7 +365,7 @@ function showError(message) {
 function contactar() {
     const phone = '+54 9 2914 74-8255';
     const message = 'Hola! Me interesa consultar sobre los perfumes del catálogo.';
-    
+
     // Intentar abrir WhatsApp
     const whatsappUrl = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
