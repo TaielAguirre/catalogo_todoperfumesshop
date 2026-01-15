@@ -51,6 +51,14 @@
                     <span class="admin-badge">Admin</span>
                 </div>
                 <div class="admin-actions">
+                    <button class="btn-icon" onclick="exportData()" title="Descargar Copia de Seguridad" style="color: #4CAF50;">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="btn-icon" onclick="document.getElementById('importFile').click()" title="Restaurar Copia de Seguridad" style="color: #2196F3;">
+                        <i class="fas fa-upload"></i>
+                    </button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(this)">
+                    
                     <a href="../index.html" class="btn-icon" title="Ver catálogo">
                         <i class="fas fa-store"></i>
                     </a>

@@ -606,3 +606,70 @@ function debounce(func, wait) {
     };
 }
 
+
+
+// ============== BACKUP SYSTEM ==============
+
+// Exportar datos
+function exportData() {
+    const products = loadProducts();
+    const categories = loadCategories();
+
+    const backup = {
+        timestamp: Date.now(),
+        date: new Date().toLocaleString(),
+        products: products,
+        categories: categories,
+        version: '1.0'
+    };
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+
+    const date = new Date().toISOString().slice(0, 10);
+    downloadAnchorNode.setAttribute("download", `catalogo_backup_${date}.json`);
+    document.body.appendChild(downloadAnchorNode); // required for firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+}
+
+// Importar datos
+function importData(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    if (!confirm('ADVERTENCIA: Esto sobrescribirá todos los productos y categorías actuales con los del archivo de respaldo. ¿Deseas continuar?')) {
+        input.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        try {
+            const backup = JSON.parse(e.target.result);
+
+            if (!backup.products || !Array.isArray(backup.products)) {
+                throw new Error('Formato de archivo inválido: faltan productos');
+            }
+
+            if (backup.products.length > 0) {
+                saveProducts(backup.products);
+            }
+
+            if (backup.categories && Array.isArray(backup.categories)) {
+                saveCategories(backup.categories);
+            }
+
+            alert('¡Restauración exitosa! La página se recargará ahora.');
+            location.reload();
+
+        } catch (error) {
+            console.error('Error importando backup:', error);
+            alert('Error al importar el archivo. Asegúrate de que es un archivo de respaldo válido.');
+        }
+    };
+
+    reader.readAsText(file);
+    input.value = ''; // Limpiar input para permitir seleccionar el mismo archivo de nuevo
+}
